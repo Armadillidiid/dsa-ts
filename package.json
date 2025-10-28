@@ -5,7 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "node --import ./setup.units.mjs --test './src/**/*.test.*'"
+    "test": "node --import ./setup.units.mjs --test './src/**/*.test.*'",
+    "test:file": "sh -c 'node --import ./setup.units.mjs --test \"./src/**/*$0\"'"
   },
   "keywords": [],
   "author": "",
