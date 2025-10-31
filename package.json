@@ -6,13 +6,16 @@
   "main": "index.js",
   "scripts": {
     "test": "node --import ./setup.units.mjs --test './src/**/*.test.*'",
-    "test:file": "sh -c 'node --import ./setup.units.mjs --test \"./src/**/*$0\"'"
+    "test:file": "sh -c 'node --import ./setup.units.mjs --test \"./src/**/*$0\"'",
+    "new": "plop new",
+    "reset": "plop reset"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.17.0",
   "devDependencies": {
-    "@types/node": "^24.9.1"
+    "@types/node": "^24.9.1",
+    "plop": "^4.0.4"
   }
 }
