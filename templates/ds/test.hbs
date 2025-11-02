@@ -1,6 +1,13 @@
-import { describe, it } from 'node:test'; import assert from 'node:assert';
-import {
-{{pascalCase name}}
-} from './{{name}}.practice.js'; describe('{{pascalCase name}}', () => {
-it('should create an instance', () => { const instance = new
-{{pascalCase name}}(); assert.ok(instance); }); // TODO: Add more test cases });
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { {{pascalCase name}} } from './{{name}}.practice.ts';
+
+
+describe('{{pascalCase name}}', () => {
+  it("should create an instance", () => {
+    const instance = new {{pascalCase name}}();
+    assert.ok(instance);
+  });
+
+  // TODO: Add more test cases
+});
