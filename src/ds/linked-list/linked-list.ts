@@ -71,7 +71,6 @@ export class LinkedList<T> implements ILinkedList<T> {
       prevNode = currNode;
       currNode = currNode.next;
     }
-    if (!prevNode) throw new Error("Cannot be undefined");
 
     this.tail = prevNode;
     this.length--;
