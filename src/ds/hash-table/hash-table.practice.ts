@@ -2,16 +2,20 @@ import { LinkedList } from "../linked-list/linked-list.ts";
 
 export class HashTable<K extends string, V = unknown> implements IMap<K, V> {
   public buckets: Array<LinkedList<MapEntry<K, V>>>;
-  public hashIndexMap: Partial<Record<K, number>>;
   private capacity: number = 16;
+  private loadFactor: number = 0.75;
+  private size: number = 0;
 
   constructor() {
-    this.buckets = new Array(this.capacity).fill(undefined).map(() => new LinkedList())
-    this.hashIndexMap = {};
+    this.buckets = this.initializeBuckets(this.capacity);
   }
 
   getSize(): number {
-    return Object.keys(this.hashIndexMap).length;
+    return this.size;
+  }
+
+  getCapacity(): number {
+    return this.capacity;
   }
 
   set(key: K, value: V): void {
@@ -22,19 +26,22 @@ export class HashTable<K extends string, V = unknown> implements IMap<K, V> {
     }
     const bucket = this.buckets[index];
 
-    if (this.has(key)) {
-      const node = bucket.toArray().find((item) => item?.key === key);
-      if (!node) throw new Error();
-      node.value = value;
+    const existingNode = bucket.toArray().find((item) => item?.key === key);
+    if (existingNode) {
+      existingNode.value = value;
     } else {
       bucket.append(new MapEntry(key, value));
-    }
+      this.size++;
 
-    this.hashIndexMap[key] = index;
+      // Check if we need to resize
+      if (this.size / this.capacity > this.loadFactor) {
+        this.resize();
+      }
+    }
   }
 
   get(key: K): V | null {
-    const index = this.hashIndexMap[key];
+    const index = this.hash(key);
     if (index === undefined) return null;
     const bucket = this.buckets[index];
 
@@ -47,29 +54,35 @@ export class HashTable<K extends string, V = unknown> implements IMap<K, V> {
   }
 
   delete(key: K): void {
-    const index = this.hashIndexMap[key];
-    if (index === undefined) return;
+    const index = this.hash(key);
 
     const bucket = this.buckets[index];
     if (!bucket) return;
 
     const nodeIndex = bucket.toArray().findIndex((node) => node?.key === key);
+    if (nodeIndex === -1) return;
     bucket.removeAt(nodeIndex);
-
-    delete this.hashIndexMap[key];
+    this.size--;
   }
 
   has(key: K): boolean {
-    return Object.hasOwn(this.hashIndexMap, key);
+    const index = this.hash(key);
+    const bucket = this.buckets[index];
+    return !!bucket?.toArray().find((item) => item?.key === key);
   }
 
   clear(): void {
-    this.buckets = new Array(this.capacity);
-    this.hashIndexMap = {};
+    this.buckets = this.initializeBuckets(this.capacity);
+    this.size = 0;
   }
 
   keys(): K[] {
-    return Object.keys(this.hashIndexMap) as K[];
+    return this.buckets.flatMap((bucket) =>
+      bucket
+        .toArray()
+        .map((entry) => entry?.key)
+        .filter((key): key is K => key !== undefined)
+    );
   }
 
   values(): V[] {
@@ -77,7 +90,7 @@ export class HashTable<K extends string, V = unknown> implements IMap<K, V> {
       bucket
         .toArray()
         .map((item) => item?.value)
-        .filter((item): item is V => item !== undefined),
+        .filter((item) => item !== undefined)
     );
   }
 
@@ -85,7 +98,7 @@ export class HashTable<K extends string, V = unknown> implements IMap<K, V> {
     return this.buckets.flatMap((bucket) =>
       bucket
         .toArray()
-        .filter((item): item is MapEntry<K, V> => item !== undefined),
+        .filter((item): item is MapEntry<K, V> => item !== undefined)
     );
   }
 
@@ -106,6 +119,28 @@ export class HashTable<K extends string, V = unknown> implements IMap<K, V> {
 
     const hash = total % this.capacity;
     return hash;
+  }
+
+  private initializeBuckets<K, V>(capacity: number) {
+    return new Array(capacity)
+      .fill(undefined)
+      .map(() => new LinkedList<MapEntry<K, V>>());
+  }
+
+  private resize(): void {
+    const oldBuckets = this.buckets;
+    this.capacity *= 2;
+    this.buckets = this.initializeBuckets(this.capacity);
+    this.size = 0;
+
+    // Rehash all existing entries
+    for (const bucket of oldBuckets) {
+      for (const entry of bucket.toArray()) {
+        if (entry) {
+          this.set(entry.key, entry.value);
+        }
+      }
+    }
   }
 }
 
