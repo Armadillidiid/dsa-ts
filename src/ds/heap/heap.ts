@@ -1,4 +1,4 @@
-abstract class Heap<T extends unknown> {
+class Heap<T extends unknown> {
   public heap: T[];
   public compare: (a: T, b: T) => boolean;
 
@@ -132,4 +132,4 @@ class MaxHeap<T> extends Heap<T> {
   }
 }
 
-export { MinHeap, MaxHeap };
+export { MinHeap, MaxHeap, Heap };
